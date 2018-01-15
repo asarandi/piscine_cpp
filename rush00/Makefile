@@ -1,6 +1,12 @@
 NAME	= ft_retro
 
-SRC		= main.cpp
+SRC		= 	Area.cpp \
+			Character.cpp \
+			Enemy.cpp \
+			Entity.cpp \
+			Missile.cpp \
+			main.cpp \
+			utils.cpp
 
 OBJ		= $(SRC:.cpp=.o)
 

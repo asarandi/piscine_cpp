@@ -6,101 +6,32 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/14 03:37:54 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/14 06:03:50 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/14 23:17:42 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
-#include <ncurses.h>
-#include <unistd.h>
+#include "game.hpp"
 
 WINDOW	*wnd;
-
-void init_game()
-{
-	wnd = initscr();
-	cbreak();
-	noecho();
-	clear();
-	refresh();
-	keypad(wnd, true);
-	nodelay(wnd, true);
-	curs_set(0);
-	if (has_colors() == 1)
-		start_color();
-	return ;
-}
-
-class	Entity
-{
-	public:
-		int	x;
-		int	y;
-		int	color;
-		int background;
-};
-
-class	Character : public Entity
-{
-	public:
-		chtype	face;
-};
-
-class	Area : public Entity
-{
-};
-
-class	Missile : public Entity
-{
-	public:
-		chtype face;
-		Missile	*next;
-};
-
-void	clear_position(Entity alpha)
-{
-	mvaddch(alpha.y, alpha.x, ' ');
-}
-
-void	draw_entity(Entity *alpha, chtype symbol, int pair)
-{
-	init_pair(pair, alpha->color, alpha->background);
-	wattron(wnd, COLOR_PAIR(pair));
-	wattron(wnd, A_BOLD);
-
-
-	mvwaddch(wnd, alpha->y, alpha->x, symbol);
-	wattroff(wnd, A_BOLD);
-	wattroff(wnd, COLOR_PAIR(pair));
-	
-}
+Area			board(0, 0);
+Missile			bullet(-1, -1);
+Enemy			gamma(-1, -1);
+int 			level_flag = 0;
+int				frame_rate = 30000;
+int 			level = 1;
+int 			lives = 5;
+unsigned long	tick = 0;
+int				spawned = 0;
 
 int	main()
 {
 
 	init_game();
-	Area	board;
-
 	getmaxyx(wnd, board.y, board.x);
-
-	Character	player;
-	player.x = board.x / 2;
-	player.y = board.y / 2;
-	player.face = ACS_DIAMOND;
-	player.color = COLOR_YELLOW;
-	player.background = COLOR_BLACK;
-
-	Missile	bullet;
-	bullet.next = NULL;
-	bullet.x = -1;
-	bullet.y = -1;
-	bullet.face = ACS_BULLET;
-
-
+	Character		player(board.x / 2, board.y - 3);
 
 	while (1)
 	{
-		getmaxyx(wnd, board.y, board.x);
 		int	input = wgetch(wnd);
 		if (input == 'q')
 		{
@@ -111,7 +42,7 @@ int	main()
 		{
 			if (player.y > 1)
 			{
-				clear_position(player);
+				player.clear_position();
 				player.y -= 1;
 			}
 		}
@@ -119,7 +50,7 @@ int	main()
 		{
 			if (player.y < board.y - 2)
 			{
-				clear_position(player);
+				player.clear_position();
 				player.y += 1;
 			}
 		}
@@ -127,7 +58,7 @@ int	main()
 		{
 			if (player.x > 1)
 			{
-				clear_position(player);
+				player.clear_position();
 				player.x -=1;
 			}
 		}
@@ -135,57 +66,56 @@ int	main()
 		{
 			if (player.x < board.x - 2)
 			{
-				clear_position(player);
+				player.clear_position();
 				player.x += 1;
 			}
 		}
 		else if (input == ' ')
 		{
-			Missile	*newbullet = new Missile;
-
-			newbullet->x = player.x;
-			newbullet->y = player.y;
-			newbullet->face = ACS_BULLET;
-			newbullet->color = COLOR_CYAN;
-			newbullet->background = COLOR_BLACK;
-			newbullet->next = NULL;
+			Missile	*newbullet = new Missile(player.x, player.y);
 			Missile	*bulletptr = &bullet;
 			while (bulletptr->next != NULL)
 				bulletptr = bulletptr->next;
 			bulletptr->next = newbullet;
-
 		}
 
-		draw_entity(&player, player.face, 1);
+		getmaxyx(wnd, board.y, board.x);
 		attron(A_BOLD);
 		box(wnd, 0, 0);
 		attroff(A_BOLD);
 
-		Missile *parent = &bullet;
-		Missile *current = &bullet;
-		current = current->next;
-		while (current != NULL)
+		chtype curp7 = mvwinch(wnd, player.y, player.x);
+		curp7 &= A_CHARTEXT;
+		if ((curp7 >= '1') && (curp7 <= '9'))
 		{
-			if (player.y != current->y)
-				clear_position(*current);
-			current->y -= 1;
-			if (current->y <= 1)
-			{
-				parent->next = current->next;
-				delete current;
-				current = parent->next;
-				continue ;
-			}
-			draw_entity(current, current->face, 2);
-			current = current->next;
-
+			lives -= 1;
 		}
+		std::string livestxt = " [ LIVES: ";
+		std::string livesnum = std::to_string(lives);
+		livestxt.append(livesnum);
+		livestxt.append(" ] ");
+		move(0, 4);
+		unsigned long i = 0;
+		while (i < livestxt.size())
+		{
+			waddch(wnd, livestxt[i]);
+			i += 1;
+		}
+		draw_entity(&player);
+		update_bullets(player.y);
+
+		if ((level_flag == 0) || ( lives == 0))
+			center_text();
+
+		if (spawned < (3 + (level * 3)) )
+			spawn_enemies();
+
+		if (tick % 30 == 1)
+			update_enemies();
 
 		wrefresh(wnd);
-		usleep(30000);
-
-
-		 
+		usleep(frame_rate);
+		tick += 1;
 	}
 	return (0);
 }
