@@ -20,7 +20,13 @@
 class	CONSOLE : public IMonitorDisplay
 {
 	public:
+		CONSOLE();
 		int	run(std::vector<IMonitorModule *> modules);
+
+	private:
+		~CONSOLE();
+		CONSOLE(const CONSOLE &src);
+		CONSOLE &operator=(const CONSOLE &src);
 };
 
 #endif

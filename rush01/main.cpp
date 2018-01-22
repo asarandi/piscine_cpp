@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/20 23:23:12 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/21 02:31:38 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/21 12:46:52 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,17 +23,19 @@
 #include "CPUActivity.hpp"
 #include "CPUInfo.hpp"
 #include "Packets.hpp"
+#include "RamModule.hpp"
 
 int main(int ac, char **av)
 {
 	std::vector<IMonitorModule *> modules;
 
-	NetworkInfo *net = new NetworkInfo();
-	OSInfo *os = new OSInfo();
-	Date *date = new Date();
-	CPUActivity *cpua = new CPUActivity();
-	CPUInfo		*cpui = new CPUInfo();
-	Packets		*pack = new Packets();
+	NetworkInfo	*net	= new NetworkInfo();
+	OSInfo		*os		= new OSInfo();
+	Date		*date	= new Date();
+	CPUActivity	*cpua	= new CPUActivity();
+	CPUInfo		*cpui	= new CPUInfo();
+	Packets		*pack	= new Packets();
+	RamModule	*ram	= new RamModule();
 
 	modules.push_back(net);
 	modules.push_back(os);
@@ -41,6 +43,7 @@ int main(int ac, char **av)
 	modules.push_back(cpua);
 	modules.push_back(cpui);
 	modules.push_back(pack);
+	modules.push_back(ram);
 
 
 	if (ac == 2)

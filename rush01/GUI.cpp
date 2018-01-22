@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/20 16:54:10 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/21 01:52:19 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/21 19:21:11 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,14 @@
 #include <iostream>
 #include "IMonitorModule.hpp"
 
+GUI::GUI() {}
+
 int	GUI::run(std::vector<IMonitorModule *> modules)
 {
-	int	SCRWIDTH = 1000;
-	int	SCRHEIGHT = 1200;
+	int	SCRWIDTH = 800;
+	int	SCRHEIGHT = 1300;
 	int TEXTSIZE = 36;
-	int FPS = 1;
+	int FPS = 60;
 
 	size_t j = 0; //used for keeping index of the text on screen
 	size_t k = 0; //used to iterate through modules
@@ -31,22 +33,53 @@ int	GUI::run(std::vector<IMonitorModule *> modules)
 
     sf::RenderWindow window(sf::VideoMode(SCRWIDTH, SCRHEIGHT), TITLE);
     sf::Font font;
-    if (!font.loadFromFile("arial.ttf"))
+    if (!font.loadFromFile("resources/arial.ttf"))
         return EXIT_FAILURE;
 
+	sf::Texture texture;
+	texture.loadFromFile("resources/tile.png");
+	sf::Sprite background(texture);
+
+	int	cat_width = 400;
+	int	cat_height = 200;
+
+	int	cat_visible = 1;
+//	int cat_number = 1;
+	int	cat_frames = 12;
+	sf::Texture cat_texture;
+	cat_texture.loadFromFile("resources/cat_sprite.png");
+	sf::IntRect rectSourceSprite(cat_width * 2, 0, cat_width, cat_height);
+	sf::Sprite cat_sprite(cat_texture, rectSourceSprite);
+	sf::Clock clock;
+
+	float	cat_step = 7.0f;
+	sf::Vector2f	cat_position = cat_sprite.getPosition();
+	cat_visible = 0;
+	cat_position.x = 0 - cat_width - cat_step;
+	std::srand(std::time(0) ^ std::rand());
+	cat_position.y = std::rand() % (SCRHEIGHT - cat_height);
+	cat_sprite.setPosition(cat_position);
+
+
+
+
+	int event_key;
     while (window.isOpen())
     {
+		event_key = -1;
         sf::Event event;
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
 				window.close();
+			if (event.type == sf::Event::KeyPressed)
+				event_key = event.key.code;
             if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape))
                 window.close();
             if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Q))
                 window.close();
-            if ((event.type == sf::Event::KeyPressed) && 
-					(event.key.code >= sf::Keyboard::Num1) && 
+            if ((event.type == sf::Event::KeyPressed) &&
+					(event.key.code >= sf::Keyboard::Num1) &&
 					(event.key.code <= sf::Keyboard::Num9) )
 			{
 				i = event.key.code - sf::Keyboard::Num1;
@@ -57,6 +90,8 @@ int	GUI::run(std::vector<IMonitorModule *> modules)
 			}
 		}
         window.clear();
+		window.draw(background);
+
 
 		j = 0;
 		k = 0;
@@ -100,9 +135,45 @@ int	GUI::run(std::vector<IMonitorModule *> modules)
 			}
 			k++;
 		}
+
+
+
+
+		if (event_key == sf::Keyboard::C)
+		{
+			cat_visible = 1; // macaroni
+		}
+
+		if ((cat_visible == 1) && (clock.getElapsedTime().asSeconds() > 0.04))
+		{
+			clock.restart();
+			cat_position.x += cat_step;
+
+			rectSourceSprite.top += cat_height;
+			if (rectSourceSprite.top == cat_height * cat_frames)
+				rectSourceSprite.top = 0;
+			cat_sprite.setTextureRect(rectSourceSprite);
+			cat_sprite.setPosition(cat_position);
+			if (cat_position.x > SCRWIDTH + cat_width)
+			{
+				cat_visible = 0;
+				cat_position.x = 0 - cat_width;
+				std::srand(std::time(0) ^ std::rand());
+				cat_position.y = std::rand() % (SCRHEIGHT - cat_height);
+			}
+
+		}
+
+
+
+
+
+
+
+		window.draw(cat_sprite);
+
         window.display();
 		usleep(1000000 / FPS);
     }
     return EXIT_SUCCESS;
 }
-

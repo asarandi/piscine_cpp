@@ -6,12 +6,19 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/20 16:56:32 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/20 20:58:34 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/21 13:35:20 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Date.hpp"
 #include <iostream>
+
+Date::Date()
+{
+	this->_tick = 0;
+	this->_refreshRate = 60; // will update once per second if FPS is 60;
+	return ;
+}
 
 std::string	Date::getName()
 {
@@ -21,9 +28,20 @@ std::string	Date::getName()
 
 std::vector<std::string> Date::getOutput()
 {
-	std::vector<std::string> result;
-	result.push_back(this->exec("date"));
+	if ((this->_tick == 0) || (this->_tick % this->_refreshRate == 0))
+	{
+		this->_tick = 1;
 
-	return result;
+		this->_result.clear();
+		this->_result.push_back(timeFunction());
+	}
+	else
+		this->_tick += 1;
+
+	return this->_result;
 }
 
+std::string Date::timeFunction() {
+	std::time_t result = time(nullptr);
+	return (std::asctime(std::localtime(&result)));
+}

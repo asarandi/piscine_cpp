@@ -20,7 +20,13 @@
 class	GUI : public IMonitorDisplay
 {
 	public:
+		GUI();
 		int	run(std::vector<IMonitorModule *> modules);
+
+	private:
+		~GUI();
+		GUI(const GUI &src);
+		GUI &operator=(const GUI &src);
 };
 
 #endif

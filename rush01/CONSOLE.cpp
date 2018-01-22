@@ -6,7 +6,7 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/20 16:54:10 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/21 01:24:30 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/21 12:50:06 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,20 +16,17 @@
 #include <iostream>
 #include "IMonitorModule.hpp"
 
-int	CONSOLE::run(std::vector<IMonitorModule *> modules)
-{
+CONSOLE::CONSOLE() {}
+
+int	CONSOLE::run(std::vector<IMonitorModule *> modules) {
 	WINDOW	*wnd;
-	int		FPS = 1;
+	int		FPS = 60;
 	unsigned long	tick = 0;
 
 	int	wnd_y = 0;
 	int wnd_x = 0;
 
-	size_t j = 0; //used for keeping index of the text on screen
-	size_t k = 0; //used to iterate through modules
-	size_t i = 0; //temp
-	size_t m = 0; //temp
-	size_t n = 0; //temp for iterating through string meh
+	size_t x_index; //temp
 
 	std::string TITLE = "ft_gkrellm";
 
@@ -41,100 +38,75 @@ int	CONSOLE::run(std::vector<IMonitorModule *> modules)
 	keypad(wnd, true);
 	nodelay(wnd, true);
 	curs_set(0);
-	if (has_colors() == 1)
-	{
+	if (has_colors() == 1) {
 		start_color();
 		init_pair(1, COLOR_RED, COLOR_BLACK);
 		init_pair(2, COLOR_WHITE, COLOR_BLACK);
 	}
 
-
-
-
 	while (1)
 	{
-
 		getmaxyx(wnd, wnd_y, wnd_x);
 		attron(A_BOLD);
 		box(wnd, 0, 0);
 		attroff(A_BOLD);
 
-		j = 1;
-		k = 0;
-		while (k < modules.size())
-		{
-			if (modules[k]->isEnabled() == 1)
-			{
+		size_t y_index = 1;
+		for (size_t k = 0; k < modules.size(); k++) {
+			if (modules[k]->isEnabled() == 1) {
 				std::string caption = modules[k]->getName();
 				wattron(wnd, COLOR_PAIR(1));
 				wattron(wnd, A_BOLD);
-				i = 0;
-				m = (wnd_x - caption.size()) / 2;
-				while (caption[i] != 0)
-				{
-					mvwaddch(wnd, j, m++, caption[i]);
-					i++;
+				x_index = (wnd_x - caption.size()) / 2;
+				for (size_t i = 0; caption[i] != 0; i++) {
+					mvwaddch(wnd, y_index, x_index++, caption[i]);
 				}
 				wattroff(wnd, A_BOLD);
 				wattroff(wnd, COLOR_PAIR(1));
 
-				j++; //index on screen
+				y_index++; //index on screen
 
 				std::vector<std::string> module_output = modules[k]->getOutput();
 				module_output.push_back("\n"); //space between modules
 
-				i = 0;
 				wattron(wnd, COLOR_PAIR(2));
-				while (i < module_output.size())
-				{	
-					n = 0;
-					m = 1;
+				for (size_t i = 0; i < module_output.size(); i++) {
+					// m = 1;
 					std::string str = module_output[i];
-					m = (wnd_x - str.size()) / 2;
-					while (str[n])
-					{
+					x_index = (wnd_x - str.size()) / 2;
+					for (size_t n = 0; str[n] != 0; n++) {
 						if (str[n] != '\n')
-							mvwaddch(wnd, j, m++, str[n]);
-						n++;
+							mvwaddch(wnd, y_index, x_index++, str[n]);
 					}
-					j++;
-					i++;
+					y_index++;
 				}
 				wattroff(wnd, COLOR_PAIR(2));
-
 			}
-			k++;
+			// k++;
 		}
 
 		int	input = wgetch(wnd);
-		if ((input == 'q') || (input == 'Q'))
-		{
+		if ((input == 'q') || (input == 'Q')) {
 			endwin();
 			break ;
 		}
-		if ((input >= '1') && (input <= '9'))
-		{
-			i = input - '1';
-			if (i < modules.size())
+		if ((input >= '1') && (input <= '9')) {
+			size_t in = input - '1';
+			if (in < modules.size())
 			{
-				modules[i]->toggle();
+				modules[in]->toggle();
 			}
 		}
 
 		wrefresh(wnd);
 		usleep(1000000 / FPS);
 
-		int y = 1;
-		while (y < wnd_y)
-		{
-			int x = 1;
-			while (x < wnd_x)
-			{
+		for (int y = 1; y < wnd_y; y++) {
+			for (int x = 1; x < wnd_x; x++) {
 				mvwaddch(wnd, y, x, ' ');
-				x++;
 			}
-			y++;
 		}
+		// wclear(wnd);
 
 		tick += 1;
 
@@ -142,4 +114,3 @@ int	CONSOLE::run(std::vector<IMonitorModule *> modules)
 
     return EXIT_SUCCESS;
 }
-

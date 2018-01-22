@@ -6,15 +6,18 @@
 /*   By: asarandi <asarandi@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/21 02:30:12 by asarandi          #+#    #+#             */
-/*   Updated: 2018/01/21 02:35:54 by asarandi         ###   ########.fr       */
+/*   Updated: 2018/01/21 13:44:14 by asarandi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Packets.hpp"
 #include <iostream>
 
-Packets::Packets(): _name("Network I/O") {
-    Update();
+Packets::Packets(): _name("Network I/O")
+{
+	this->_tick = 0;
+	this->_refreshRate = 45;	//will update every 0.75 seconds if FPS is 60;
+//    Update();
 }
 
 Packets::~Packets() {}
@@ -33,7 +36,13 @@ std::string Packets::getName() {
 }
 
 std::vector<std::string> Packets::getOutput() {
-	Update();
+	if ((this->_tick == 0) || (this->_tick % this->_refreshRate == 0))
+	{
+		this->_tick = 1;
+		Update();
+	}
+	else
+		this->_tick += 1;
     return (_out);
 }
 

@@ -10,12 +10,13 @@ SRC		= main.cpp \
 			CONSOLE.cpp \
 			CPUActivity.cpp \
 			CPUInfo.cpp \
-			Packets.cpp
+			Packets.cpp \
+			RamModule.cpp
 
 OBJ		= $(SRC:.cpp=.o)
 
 CC		= clang++
-FLAGS	= -Wall -Wextra -Werror -g
+FLAGS	= -Wall -Wextra -Werror
 INC		= -I SFML/include
 FW1		= -F SFML/Frameworks
 FW2		= -framework sfml-graphics -framework sfml-window -framework sfml-system 
@@ -34,7 +35,7 @@ else
 		mkdir SFML
 		tar xvzf sfml.tgz -C SFML --strip-components 1
 		mv SFML/extlibs/* SFML/Frameworks
-		curl -L 'https://github.com/caarlos0-graveyard/msfonts/raw/master/fonts/arial.ttf' -o arial.ttf
+#		curl -L 'https://github.com/caarlos0-graveyard/msfonts/raw/master/fonts/arial.ttf' -o arial.ttf
 		@clear
 		@echo "i got my files, now run make again"
 		@rm -rf sfml.tgz
